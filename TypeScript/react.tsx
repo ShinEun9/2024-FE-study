@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, FC, ReactNode, useEffect } from "react";
+import { useState, useCallback, useRef, FC, ReactNode, useEffect } from "react";
 
 interface P {
   name: string;
@@ -70,12 +70,54 @@ const WordRelay: FC<P> = (props) => {
 
  */
 
+  /*
+  * useCallback (v18)
+    function useCallback<T extends Function>(callback: T, deps: DependencyList): T;
+
+    useCallback(v17)
+    function useCallback<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T;
+
+    (...args: any[]) => any은 매개변수랑 리턴값이 명확하게 Any로 타이핑되어있는 것이고 Function은 
+    매개변수랑 리턴값이 타이핑이 안되어 있는 것이다!
+ 
+    * FormEvent
+    - interface FormEvent<T = Element> extends  SyntheticEvent<T> {}
+    - interface SyntheticEvent<T = Element, E = Event> extends BaseSyntheticEvent<E, EventTarget & T, EventTarget> {}
+    - interface BaseSyntheticEvent<E = object, C = any, T = any> {
+        nativeEvent: E;
+        currentTarget: C;
+        target: T;
+        bubbles: boolean;
+        cancelable: boolean;
+        defaultPrevented: boolean;
+        eventPhase: number;
+        isTrusted: boolean;
+        preventDefault(): void;
+        isDefaultPrevented(): boolean;
+        stopPropagation(): void;
+        isPropagationStopped(): boolean;
+        persist(): void;
+        timeStamp: number;
+        type: string;
+    }
+
+    const onSubmitForm = useCallback((e)=>{} ,[]) -> 에러
+    const onSubmitForm = useCallback((e: FormEvent)=>{},[])
+  
+
+
+    const onClick = useCallback((e: MouseEvent)=>{},[])
+
+  */
+
   const [value, setValue] = useState("");
   const [result, setResult] = useState("");
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
+  const mutaRef = useRef(0);
+  // const inputEl = useRef<HTMLInputElement>();
 
   const onSubmitForm = useCallback(
-    (e) => {
+    (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const input = inputEl.current;
       if (word[word.length - 1] === value[0]) {
@@ -96,9 +138,13 @@ const WordRelay: FC<P> = (props) => {
     [word, value]
   );
 
-  const onChange = useCallback((e) => {
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.currentTarget.value);
   }, []);
+
+  const onChange2: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setValue(e.currentTarget.value);
+  };
 
   return (
     <>
