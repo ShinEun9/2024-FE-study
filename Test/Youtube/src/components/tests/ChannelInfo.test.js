@@ -1,20 +1,35 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { withAllContexts, withRouter } from "../../tests/utils";
+import { render, screen } from "@testing-library/react";
 import { Route } from "react-router-dom";
+import { withAllContexts, withRouter } from "../../tests/utils";
 import ChannelInfo from "../ChannelInfo";
 
 describe("ChannelInfo", () => {
   const fakeYoutube = {
-    channelImageUrl: jest.fn(),
+    channelImageURL: jest.fn(),
   };
 
-  afterEach(() => fakeYoutube.channelImageUrl.mockReset());
+  afterEach(() => fakeYoutube.channelImageURL.mockReset());
 
   it("renders correctly", async () => {
-    fakeYoutube.channelImageUrl.mockImplementation(() => "url");
+    fakeYoutube.channelImageURL.mockImplementation(() => "url");
 
-    render(withAllContexts(withRouter(<Route path="/" element={<ChannelInfo id="id" name="channel" />} />), fakeYoutube));
+    const { asFragment } = renderChannelInfo();
 
-    await waitFor(() => screen.findByText("channel"));
+    await screen.findByRole("img");
+
+    expect(asFragment()).toMatchSnapshot();
   });
+
+  it("renders without URL", () => {
+    fakeYoutube.channelImageURL.mockImplementation(() => {
+      throw new Error("error");
+    });
+    renderChannelInfo();
+
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
+  function renderChannelInfo() {
+    return render(withAllContexts(withRouter(<Route path="/" element={<ChannelInfo id="id" name="channel" />} />), fakeYoutube));
+  }
 });
